@@ -24,10 +24,10 @@ cp miniapp/.env.example miniapp/.env
 Заполни `miniapp/.env` и запусти:
 ```bash
 cd miniapp
-docker compose up -d --build
+./start.sh
 ```
 
-## Запуск бота
+## Запуск бота вручную
 ```bash
-BOT_TOKEN=... WEBAPP_URL=... python bot.py
+BOT_TOKEN=... WEBAPP_URL=... python3 bot.py
 ```
