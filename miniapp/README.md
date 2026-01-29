@@ -16,6 +16,9 @@ Frontend build:
 Bot:
 - `WEBAPP_URL`
 
+Опционально:
+- `DIRECT_DOMAIN` — если задан, скрипт не будет запускать cloudflared
+
 ## Запуск через Docker
 ```bash
 cp miniapp/.env.example miniapp/.env

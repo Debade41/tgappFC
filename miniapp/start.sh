@@ -20,40 +20,44 @@ cd "$ROOT_DIR/miniapp"
 docker-compose down --remove-orphans >/dev/null 2>&1 || true
 docker-compose up -d --build api
 
-nohup cloudflared tunnel --url http://localhost:8000 --logfile "$API_LOG" --loglevel info >/dev/null 2>&1 &
+if [ -n "${DIRECT_DOMAIN:-}" ]; then
+  API_URL="https://$DIRECT_DOMAIN"
+  WEB_URL="https://$DIRECT_DOMAIN"
+else
+  nohup cloudflared tunnel --url http://localhost:8000 --logfile "$API_LOG" --loglevel info >/dev/null 2>&1 &
 
-API_URL=""
-for i in $(seq 1 60); do
-  API_URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$API_LOG" | head -n1 || true)
-  if [ -n "$API_URL" ]; then
-    break
+  API_URL=""
+  for i in $(seq 1 60); do
+    API_URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$API_LOG" | head -n1 || true)
+    if [ -n "$API_URL" ]; then
+      break
+    fi
+    sleep 1
+  done
+
+  if [ -z "$API_URL" ]; then
+    echo "API tunnel URL not found"
+    exit 1
   fi
-  sleep 1
-done
 
-if [ -z "$API_URL" ]; then
-  echo "API tunnel URL not found"
-  exit 1
+  nohup cloudflared tunnel --url http://localhost:8080 --logfile "$WEB_LOG" --loglevel info >/dev/null 2>&1 &
+
+  WEB_URL=""
+  for i in $(seq 1 60); do
+    WEB_URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$WEB_LOG" | head -n1 || true)
+    if [ -n "$WEB_URL" ]; then
+      break
+    fi
+    sleep 1
+  done
+
+  if [ -z "$WEB_URL" ]; then
+    echo "Web tunnel URL not found"
+    exit 1
+  fi
 fi
 
 sed -i "s|^VITE_API_URL=.*|VITE_API_URL=$API_URL|" "$ENV_FILE"
-
-nohup cloudflared tunnel --url http://localhost:8080 --logfile "$WEB_LOG" --loglevel info >/dev/null 2>&1 &
-
-WEB_URL=""
-for i in $(seq 1 60); do
-  WEB_URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$WEB_LOG" | head -n1 || true)
-  if [ -n "$WEB_URL" ]; then
-    break
-  fi
-  sleep 1
-done
-
-if [ -z "$WEB_URL" ]; then
-  echo "Web tunnel URL not found"
-  exit 1
-fi
-
 sed -i "s|^WEBAPP_URL=.*|WEBAPP_URL=$WEB_URL|" "$ENV_FILE"
 sed -i "s|^ALLOWED_ORIGINS=.*|ALLOWED_ORIGINS=$WEB_URL|" "$ENV_FILE"
 
