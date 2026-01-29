@@ -17,6 +17,7 @@ set +a
 
 cd "$ROOT_DIR/miniapp"
 
+docker-compose down --remove-orphans >/dev/null 2>&1 || true
 docker-compose up -d --build api
 
 nohup cloudflared tunnel --url http://localhost:8000 --logfile "$API_LOG" --loglevel info >/dev/null 2>&1 &
