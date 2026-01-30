@@ -33,6 +33,7 @@ export default function App() {
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("Добро пожаловать в колесо фортуны");
   const [prize, setPrize] = useState(null);
+  const [debug, setDebug] = useState("");
   const wheelRef = useRef(null);
   const initData = useMemo(() => getInitData(), []);
 
@@ -42,6 +43,17 @@ export default function App() {
       tg.ready();
       tg.expand();
     }
+    setDebug(
+      JSON.stringify(
+        {
+          hasTelegram: !!window.Telegram,
+          hasWebApp: !!window.Telegram?.WebApp,
+          initDataLen: initData ? initData.length : 0
+        },
+        null,
+        2
+      )
+    );
   }, []);
 
   useEffect(() => {
@@ -121,6 +133,11 @@ export default function App() {
         <div className="message">{message}</div>
         {prize && <div className="prize">{prize}</div>}
       </div>
+      {debug && (
+        <pre className="debug" style={{ fontSize: 12, opacity: 0.7, textAlign: "left", maxWidth: 360 }}>
+          {debug}
+        </pre>
+      )}
 
       <button className="spin-btn" onClick={spin} disabled={status === "spinning" || status === "locked"}>
         {status === "locked" ? "Уже участвовали" : "Крутить колесо фортуны"}
