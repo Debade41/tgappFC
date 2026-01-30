@@ -16,6 +16,30 @@ function getInitData() {
   return params.get("initData") || "";
 }
 
+function parseInitData(initData) {
+  if (!initData) return {};
+  try {
+    const params = new URLSearchParams(initData);
+    const userRaw = params.get("user") || "";
+    let userId = "";
+    if (userRaw) {
+      try {
+        userId = JSON.parse(userRaw).id || "";
+      } catch {
+        userId = "";
+      }
+    }
+    return {
+      userId,
+      queryId: params.get("query_id") || "",
+      authDate: params.get("auth_date") || "",
+      hashPrefix: (params.get("hash") || "").slice(0, 8)
+    };
+  } catch {
+    return {};
+  }
+}
+
 async function apiPost(path, body) {
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
@@ -43,12 +67,17 @@ export default function App() {
       tg.ready();
       tg.expand();
     }
+    const parsed = parseInitData(initData);
     setDebug(
       JSON.stringify(
         {
           hasTelegram: !!window.Telegram,
           hasWebApp: !!window.Telegram?.WebApp,
-          initDataLen: initData ? initData.length : 0
+          initDataLen: initData ? initData.length : 0,
+          userId: parsed.userId || "",
+          queryId: parsed.queryId || "",
+          authDate: parsed.authDate || "",
+          hashPrefix: parsed.hashPrefix || ""
         },
         null,
         2

@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 from datetime import datetime, timezone
@@ -9,6 +10,8 @@ from pydantic import BaseModel
 
 from .db import get_spin, init_db, set_spin
 from .security import validate_init_data
+
+logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID", "0"))
@@ -41,6 +44,7 @@ def _get_user_id(init_data: str) -> int:
     try:
         data = validate_init_data(init_data, BOT_TOKEN)
     except ValueError as exc:
+        logging.warning("initData validation failed: %s (len=%s)", exc, len(init_data or ""))
         raise HTTPException(status_code=401, detail=str(exc)) from exc
 
     user_raw = data.get("user")
