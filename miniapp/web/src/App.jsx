@@ -13,6 +13,8 @@ const PRIZES = [
   "Отрез сатина до 0.5 м"
 ];
 
+const SEGMENT_COLORS = ["#ffb347", "#f76b52", "#ffd27a", "#ff9f68", "#ffc07a", "#f77b5a", "#ffe0a8"];
+
 function getInitData() {
   const tg = window.Telegram?.WebApp;
   if (tg && tg.initData) return tg.initData;
@@ -115,8 +117,33 @@ export default function App() {
 
       <div className="wheel-wrap">
         <div className="pointer" />
-        <div className="wheel" ref={wheelRef}>
-          <div className="wheel-face" />
+        <div
+          className="wheel"
+          ref={wheelRef}
+          style={{
+            "--count": PRIZES.length,
+            background: `conic-gradient(${PRIZES.map((_, i) => {
+              const start = (360 / PRIZES.length) * i;
+              const end = (360 / PRIZES.length) * (i + 1);
+              const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
+              return `${color} ${start}deg ${end}deg`;
+            }).join(", ")})`
+          }}
+        >
+          <div className="wheel-labels">
+            {PRIZES.map((label, index) => {
+              const angle = (360 / PRIZES.length) * (index + 0.5);
+              return (
+                <div
+                  className="wheel-label"
+                  key={label}
+                  style={{ transform: `rotate(${angle}deg) translateY(-110px) rotate(${-angle}deg)` }}
+                >
+                  {label}
+                </div>
+              );
+            })}
+          </div>
           <div className="wheel-center" />
         </div>
       </div>

@@ -76,24 +76,45 @@ body {
   width: 260px;
   height: 260px;
   border-radius: 50%;
-  background: conic-gradient(
-    #ffb347 0deg 120deg,
-    #f76b52 120deg 240deg,
-    #ffd27a 240deg 360deg
-  );
   border: 8px solid #fff4e2;
   box-shadow: 0 16px 30px rgba(247, 107, 82, 0.2);
   display: grid;
   place-items: center;
   transform: rotate(0deg);
+  position: relative;
 }
 
-.wheel-face {
-  width: 180px;
-  height: 180px;
+.wheel::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff4e2, #ffdfc6);
-  border: 2px dashed rgba(59, 42, 26, 0.2);
+  background: repeating-conic-gradient(
+    from -90deg,
+    rgba(255, 255, 255, 0.85) 0 2deg,
+    rgba(255, 255, 255, 0) 2deg calc(360deg / var(--count))
+  );
+  pointer-events: none;
+}
+
+.wheel-labels {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.wheel-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  width: 120px;
+  margin-left: -60px;
+  color: rgba(59, 42, 26, 0.9);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .wheel-center {
@@ -115,6 +136,7 @@ body {
   border-right: 16px solid transparent;
   border-top: 28px solid var(--accent);
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  z-index: 2;
 }
 
 .status {
