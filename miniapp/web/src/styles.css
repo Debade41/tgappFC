@@ -133,19 +133,22 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(138px, 40vw);
-  text-align: center;
   transform-origin: 0 0;
 
-  font-size: 10.8px;
+  width: 130px;          
+  text-align: center;
+
+  font-size: 10.5px;
   font-weight: 700;
-  color: rgba(59, 42, 26, 0.92);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
   line-height: 1.1;
-  letter-spacing: 0.15px;
 
   white-space: normal;
   word-break: break-word;
+  overflow: visible;
+}
+
+.wheel-label.long {
+  font-size: 9px;
 }
 
 .wheel-label.long {

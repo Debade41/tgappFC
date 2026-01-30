@@ -43,6 +43,34 @@ async function apiPost(path, body) {
   return res.json();
 }
 
+function wrapLabel(text, maxLen = 14, maxLines = 3) {
+  const words = text.split(" ");
+  const lines = [];
+  let line = "";
+
+  for (const w of words) {
+    const next = line ? `${line} ${w}` : w;
+    if (next.length <= maxLen || !line) {
+      line = next;
+    } else {
+      lines.push(line);
+      line = w;
+      if (lines.length === maxLines - 1) break;
+    }
+  }
+
+  const usedWords = lines.join(" ").split(" ").filter(Boolean).length + (line ? line.split(" ").length : 0);
+  const allWords = words.length;
+
+  if (line) lines.push(line);
+
+  if (usedWords < allWords && lines.length) {
+    lines[lines.length - 1] = lines[lines.length - 1].replace(/\.*$/, "") + "…";
+  }
+
+  return lines;
+}
+
 export default function App() {
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("Добро пожаловать в колесо фортуны");
@@ -164,23 +192,36 @@ export default function App() {
           }}
         >
           <div className="wheel-labels">
-            {PRIZES.map((label, index) => {
-              const isLong = label.length > 16;
-              const angle = index * segmentAngle;
+          {PRIZES.map((label, index) => {
+            const segmentAngle = 360 / PRIZES.length;
 
-              return (
-                <div
-                  className={`wheel-label${isLong ? " long" : ""}`}
-                  key={`${label}-${index}`}
-                  style={{
-                    transform: `rotate(${angle}deg) translate(120px) rotate(90deg) translateY(-50%)`,
-                  }}
-                >
-                  {label}
-                </div>
-              );
-            })}
-          </div>
+            const angle = (index + 0.5) * segmentAngle;
+
+            const radius = 118; 
+
+            const lines = wrapLabel(label, 14, 3);
+            const isLong = lines.length >= 3 || label.length > 18;
+
+            return (
+              <div
+                key={`${label}-${index}`}
+                className={`wheel-label${isLong ? " long" : ""}`}
+                style={{
+                  transform: `
+                    rotate(${angle}deg)
+                    translate(${radius}px)
+                    rotate(90deg)
+                    translate(-50%, -50%)
+                  `,
+                }}
+              >
+                {lines.map((t, i) => (
+                  <div key={i}>{t}</div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
 
           <div className="wheel-center" />
         </div>
