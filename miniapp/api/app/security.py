@@ -17,7 +17,7 @@ def validate_init_data(init_data: str, bot_token: str) -> Dict[str, str]:
         raise ValueError("initData is empty")
 
     received_hash, data, data_check_string = _build_data_check_string(init_data)
-    secret_key = hashlib.sha256(bot_token.encode()).digest()
+    secret_key = hmac.new(b"WebAppData", bot_token.encode(), hashlib.sha256).digest()
     calc_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
 
     if not hmac.compare_digest(calc_hash, received_hash):
