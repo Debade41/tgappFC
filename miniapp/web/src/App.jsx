@@ -225,6 +225,7 @@ export default function App() {
                     translate(${radius}px)
                     rotate(90deg)
                     translate(-50%, -50%)
+                    translate(6px, 0)
                   `,
                 }}
               >
