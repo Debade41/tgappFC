@@ -10,10 +10,18 @@ const PRIZES = [
   "Отрез РАНФОРСА до 0.5 м",
   "Отрез РАНФОРСА до 1 м",
   "Набор из 3-х мини-отрезов",
-  "Отрез сатина до 0.5 м"
+  "Отрез сатина до 0.5 м",
 ];
 
-const SEGMENT_COLORS = ["#ffb347", "#f76b52", "#ffd27a", "#ff9f68", "#ffc07a", "#f77b5a", "#ffe0a8"];
+const SEGMENT_COLORS = [
+  "#ffb347",
+  "#f76b52",
+  "#ffd27a",
+  "#ff9f68",
+  "#ffc07a",
+  "#f77b5a",
+  "#ffe0a8",
+];
 
 function getInitData() {
   const tg = window.Telegram?.WebApp;
@@ -26,7 +34,7 @@ async function apiPost(path, body) {
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const text = await res.text();
@@ -39,8 +47,11 @@ export default function App() {
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("Добро пожаловать в колесо фортуны");
   const [prize, setPrize] = useState(null);
+
   const wheelRef = useRef(null);
   const initData = useMemo(() => getInitData(), []);
+
+  const rotationRef = useRef(0);
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
@@ -52,6 +63,7 @@ export default function App() {
 
   useEffect(() => {
     if (!initData) return;
+
     apiPost("/api/me", { initData })
       .then((data) => {
         if (data.has_spun) {
@@ -67,6 +79,7 @@ export default function App() {
 
   const spin = async () => {
     if (status === "spinning" || status === "locked") return;
+
     if (!initData) {
       setMessage("Откройте приложение через Telegram");
       return;
@@ -78,6 +91,7 @@ export default function App() {
 
     try {
       const result = await apiPost("/api/spin", { initData });
+
       if (result.already) {
         setStatus("locked");
         setPrize(result.prize);
@@ -85,21 +99,35 @@ export default function App() {
         return;
       }
 
-      const turns = 6 + Math.floor(Math.random() * 3);
-      const segmentAngle = 360 / PRIZES.length;
+      const count = PRIZES.length;
+      const segmentAngle = 360 / count;
+
       const landingIndex = Math.max(0, PRIZES.indexOf(result.prize));
-      const landingAngle = landingIndex * segmentAngle + segmentAngle / 2;
-      const rotation = turns * 360 + (360 - landingAngle);
+
+      const desiredMod = (360 - (landingIndex + 0.5) * segmentAngle) % 360;
+
+      const current = ((rotationRef.current % 360) + 360) % 360;
+
+      const extra = (desiredMod - current + 360) % 360;
+
+      const turns = 6 + Math.floor(Math.random() * 3);
+
+      const nextRotation = rotationRef.current + turns * 360 + extra;
+      rotationRef.current = nextRotation;
 
       if (wheelRef.current) {
         wheelRef.current.style.transition = `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.12, 0.8, 0.12, 1)`;
-        wheelRef.current.style.transform = `rotate(${rotation}deg)`;
+        wheelRef.current.style.transform = `rotate(${nextRotation}deg)`;
       }
 
       setTimeout(() => {
         setStatus(result.locked ? "locked" : "done");
         setPrize(result.prize);
         setMessage("Спасибо за участие");
+
+        try {
+          window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("success");
+        } catch {}
       }, SPIN_DURATION_MS);
     } catch (err) {
       setStatus("idle");
@@ -107,9 +135,13 @@ export default function App() {
     }
   };
 
+  const count = PRIZES.length;
+  const segmentAngle = 360 / count;
+
   return (
     <div className="app">
       <div className="glow" />
+
       <header className="header">
         <h1>Колесо фортуны</h1>
         <p className="subtitle">Поймай удачу на тёплой волне</p>
@@ -117,34 +149,39 @@ export default function App() {
 
       <div className="wheel-wrap">
         <div className="pointer" />
+
         <div
           className="wheel"
           ref={wheelRef}
           style={{
-            "--count": PRIZES.length,
+            "--count": count,
             background: `conic-gradient(${PRIZES.map((_, i) => {
-              const start = (360 / PRIZES.length) * i;
-              const end = (360 / PRIZES.length) * (i + 1);
+              const start = segmentAngle * i;
+              const end = segmentAngle * (i + 1);
               const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
               return `${color} ${start}deg ${end}deg`;
-            }).join(", ")})`
+            }).join(", ")})`,
           }}
         >
           <div className="wheel-labels">
             {PRIZES.map((label, index) => {
-              const angle = (360 / PRIZES.length) * (index + 0.5);
-              const isLong = label.length > 14;
+              const isLong = label.length > 16;
+              const angle = index * segmentAngle;
+
               return (
                 <div
                   className={`wheel-label${isLong ? " long" : ""}`}
-                  key={label}
-                  style={{ transform: `rotate(${angle}deg) translateY(-120px) translateX(-50%)` }}
+                  key={`${label}-${index}`}
+                  style={{
+                    transform: `rotate(${angle}deg) translate(120px) rotate(90deg) translateY(-50%)`,
+                  }}
                 >
                   {label}
                 </div>
               );
             })}
           </div>
+
           <div className="wheel-center" />
         </div>
       </div>
@@ -155,9 +192,8 @@ export default function App() {
       </div>
 
       <button className="spin-btn" onClick={spin} disabled={status === "spinning" || status === "locked"}>
-        {status === "locked" ? "Уже участвовали" : "Крутить колесо фортуны"}
+        {status === "locked" ? "Уже участвовали" : status === "spinning" ? "Крутим..." : "Крутить колесо фортуны"}
       </button>
-
     </div>
   );
 }
