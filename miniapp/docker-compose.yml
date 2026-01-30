@@ -5,8 +5,11 @@ services:
       BOT_TOKEN: "${BOT_TOKEN}"
       ADMIN_USER_ID: "${ADMIN_USER_ID}"
       ALLOWED_ORIGINS: "${ALLOWED_ORIGINS}"
+      DB_PATH: "/data/wheel.db"
     ports:
       - "8000:8000"
+    volumes:
+      - api-data:/data
     restart: unless-stopped
 
   web:
@@ -17,3 +20,6 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+
+volumes:
+  api-data:

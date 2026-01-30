@@ -66,14 +66,19 @@ async def startup() -> None:
 async def health():
     return {"ok": True}
 
+@app.get("/api/prizes")
+async def prizes():
+    return {"prizes": PRIZES}
 
 @app.post("/api/me")
 async def me(payload: InitPayload):
     user_id = _get_user_id(payload.initData)
     record = get_spin(user_id)
     if not record:
-        return {"has_spun": False, "prize": None}
-    return {"has_spun": True, "prize": record["prize"]}
+        return {"has_spun": False, "prize": None, "prize_index": None}
+    prize = record["prize"]
+    prize_index = PRIZES.index(prize) if prize in PRIZES else None
+    return {"has_spun": True, "prize": prize, "prize_index": prize_index}
 
 
 @app.post("/api/spin")
@@ -83,10 +88,13 @@ async def spin(payload: InitPayload):
     record = get_spin(user_id)
     is_admin = user_id == ADMIN_USER_ID
     if record and not is_admin:
-        return {"ok": True, "already": True, "prize": record["prize"], "locked": True}
+        prize = record["prize"]
+        prize_index = PRIZES.index(prize) if prize in PRIZES else None
+        return {"ok": True, "already": True, "prize": prize, "prize_index": prize_index, "locked": True}
 
     prize = random.choice(PRIZES)
+    prize_index = PRIZES.index(prize)
     if not is_admin:
         set_spin(user_id, prize, datetime.now(timezone.utc).isoformat())
 
-    return {"ok": True, "already": False, "prize": prize, "locked": not is_admin}
+    return {"ok": True, "already": False, "prize": prize, "prize_index": prize_index, "locked": not is_admin}

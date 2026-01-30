@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 const API_URL = import.meta.env.VITE_API_URL || "";
 const SPIN_DURATION_MS = 5000;
 
-const PRIZES = [
+const DEFAULT_PRIZES = [
   "Скидка 7%",
   "Скидка 5%",
   "Отрез DUCK до 0.5 м",
@@ -75,6 +75,7 @@ export default function App() {
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("Добро пожаловать в колесо фортуны");
   const [prize, setPrize] = useState(null);
+  const [prizes, setPrizes] = useState(DEFAULT_PRIZES);
 
   const wheelRef = useRef(null);
   const initData = useMemo(() => getInitData(), []);
@@ -87,6 +88,15 @@ export default function App() {
       tg.ready();
       tg.expand();
     }
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/prizes`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.prizes?.length) setPrizes(data.prizes);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -127,10 +137,14 @@ export default function App() {
         return;
       }
 
-      const count = PRIZES.length;
+      const count = prizes.length;
+      if (!count) throw new Error("No prizes");
       const segmentAngle = 360 / count;
 
-      const landingIndex = Math.max(0, PRIZES.indexOf(result.prize));
+      const landingIndex =
+        typeof result.prize_index === "number" && result.prize_index >= 0
+          ? result.prize_index
+          : Math.max(0, prizes.indexOf(result.prize));
 
       const desiredMod = (360 - (landingIndex + 0.5) * segmentAngle) % 360;
 
@@ -163,7 +177,7 @@ export default function App() {
     }
   };
 
-  const count = PRIZES.length;
+  const count = prizes.length;
   const segmentAngle = 360 / count;
 
   return (
@@ -183,7 +197,7 @@ export default function App() {
           ref={wheelRef}
           style={{
             "--count": count,
-            background: `conic-gradient(from -90deg, ${PRIZES.map((_, i) => {
+            background: `conic-gradient(from -90deg, ${prizes.map((_, i) => {
               const start = segmentAngle * i;
               const end = segmentAngle * (i + 1);
               const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
@@ -192,8 +206,8 @@ export default function App() {
           }}
         >
           <div className="wheel-labels">
-          {PRIZES.map((label, index) => {
-            const segmentAngle = 360 / PRIZES.length;
+          {prizes.map((label, index) => {
+            const segmentAngle = 360 / prizes.length;
 
             const angle = (index + 0.5) * segmentAngle - 90;
 

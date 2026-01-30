@@ -1,7 +1,10 @@
 import hashlib
 import hmac
+import time
 from typing import Dict, Tuple
 from urllib.parse import parse_qsl
+
+MAX_AUTH_AGE_SECONDS = 24 * 60 * 60
 
 
 def _build_data_check_string(init_data: str) -> Tuple[str, Dict[str, str], str]:
@@ -22,5 +25,17 @@ def validate_init_data(init_data: str, bot_token: str) -> Dict[str, str]:
 
     if not hmac.compare_digest(calc_hash, received_hash):
         raise ValueError("initData hash mismatch")
+
+    auth_date = data.get("auth_date")
+    if not auth_date:
+        raise ValueError("auth_date is missing")
+    try:
+        auth_ts = int(auth_date)
+    except ValueError as exc:
+        raise ValueError("auth_date is invalid") from exc
+
+    now = int(time.time())
+    if abs(now - auth_ts) > MAX_AUTH_AGE_SECONDS:
+        raise ValueError("initData is too old")
 
     return data

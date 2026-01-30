@@ -9,6 +9,11 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, W
 TOKEN = os.getenv("BOT_TOKEN", "")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "")
 
+if not TOKEN:
+    raise SystemExit("BOT_TOKEN is not set")
+if not WEBAPP_URL:
+    raise SystemExit("WEBAPP_URL is not set")
+
 
 def kb_start():
     return InlineKeyboardMarkup(

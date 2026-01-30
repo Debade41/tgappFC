@@ -1,8 +1,9 @@
+import os
 import sqlite3
 from pathlib import Path
 from threading import Lock
 
-DB_PATH = Path(__file__).resolve().parent / "wheel.db"
+DB_PATH = Path(os.getenv("DB_PATH", Path(__file__).resolve().parent / "wheel.db"))
 
 _lock = Lock()
 _conn = sqlite3.connect(DB_PATH, check_same_thread=False)
