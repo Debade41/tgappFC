@@ -4,9 +4,13 @@ const API_URL = import.meta.env.VITE_API_URL || "";
 const SPIN_DURATION_MS = 5000;
 
 const PRIZES = [
-  "Скидка 5 процентов",
-  "Скидка 3 процентов",
-  "Скидка 7 процентов"
+  "Скидка 7%",
+  "Скидка 5%",
+  "Отрез DUCK до 0.5 м",
+  "Отрез РАНФОРСА до 0.5 м",
+  "Отрез РАНФОРСА до 1 м",
+  "Набор из 3-х мини-отрезов",
+  "Отрез сатина до 0.5 м"
 ];
 
 function getInitData() {
@@ -83,7 +87,7 @@ export default function App() {
       const segmentAngle = 360 / PRIZES.length;
       const landingIndex = Math.max(0, PRIZES.indexOf(result.prize));
       const landingAngle = landingIndex * segmentAngle + segmentAngle / 2;
-      const rotation = turns * 360 + (360 - landingAngle);
+      const rotation = turns * 360 + (180 - landingAngle);
 
       if (wheelRef.current) {
         wheelRef.current.style.transition = `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.12, 0.8, 0.12, 1)`;
@@ -126,7 +130,6 @@ export default function App() {
         {status === "locked" ? "Уже участвовали" : "Крутить колесо фортуны"}
       </button>
 
-      <footer className="footer">Играйте честно — удача любит смелых</footer>
     </div>
   );
 }
