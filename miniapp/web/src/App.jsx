@@ -133,11 +133,12 @@ export default function App() {
           <div className="wheel-labels">
             {PRIZES.map((label, index) => {
               const angle = (360 / PRIZES.length) * (index + 0.5);
+              const isLong = label.length > 14;
               return (
                 <div
-                  className="wheel-label"
+                  className={`wheel-label${isLong ? " long" : ""}`}
                   key={label}
-                  style={{ transform: `rotate(${angle}deg) translateY(-102px) translateX(-50%)` }}
+                  style={{ transform: `rotate(${angle}deg) translateY(-120px) translateX(-50%)` }}
                 >
                   {label}
                 </div>
