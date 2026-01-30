@@ -16,30 +16,6 @@ function getInitData() {
   return params.get("initData") || "";
 }
 
-function parseInitData(initData) {
-  if (!initData) return {};
-  try {
-    const params = new URLSearchParams(initData);
-    const userRaw = params.get("user") || "";
-    let userId = "";
-    if (userRaw) {
-      try {
-        userId = JSON.parse(userRaw).id || "";
-      } catch {
-        userId = "";
-      }
-    }
-    return {
-      userId,
-      queryId: params.get("query_id") || "",
-      authDate: params.get("auth_date") || "",
-      hashPrefix: (params.get("hash") || "").slice(0, 8)
-    };
-  } catch {
-    return {};
-  }
-}
-
 async function apiPost(path, body) {
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
@@ -57,7 +33,6 @@ export default function App() {
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("Добро пожаловать в колесо фортуны");
   const [prize, setPrize] = useState(null);
-  const [debug, setDebug] = useState("");
   const wheelRef = useRef(null);
   const initData = useMemo(() => getInitData(), []);
 
@@ -67,22 +42,6 @@ export default function App() {
       tg.ready();
       tg.expand();
     }
-    const parsed = parseInitData(initData);
-    setDebug(
-      JSON.stringify(
-        {
-          hasTelegram: !!window.Telegram,
-          hasWebApp: !!window.Telegram?.WebApp,
-          initDataLen: initData ? initData.length : 0,
-          userId: parsed.userId || "",
-          queryId: parsed.queryId || "",
-          authDate: parsed.authDate || "",
-          hashPrefix: parsed.hashPrefix || ""
-        },
-        null,
-        2
-      )
-    );
   }, []);
 
   useEffect(() => {
@@ -162,11 +121,6 @@ export default function App() {
         <div className="message">{message}</div>
         {prize && <div className="prize">{prize}</div>}
       </div>
-      {debug && (
-        <pre className="debug" style={{ fontSize: 12, opacity: 0.7, textAlign: "left", maxWidth: 360 }}>
-          {debug}
-        </pre>
-      )}
 
       <button className="spin-btn" onClick={spin} disabled={status === "spinning" || status === "locked"}>
         {status === "locked" ? "Уже участвовали" : "Крутить колесо фортуны"}
