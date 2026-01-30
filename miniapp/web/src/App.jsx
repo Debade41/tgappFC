@@ -89,7 +89,7 @@ export default function App() {
       const segmentAngle = 360 / PRIZES.length;
       const landingIndex = Math.max(0, PRIZES.indexOf(result.prize));
       const landingAngle = landingIndex * segmentAngle + segmentAngle / 2;
-      const rotation = turns * 360 + (180 - landingAngle);
+      const rotation = turns * 360 + (360 - landingAngle);
 
       if (wheelRef.current) {
         wheelRef.current.style.transition = `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.12, 0.8, 0.12, 1)`;
