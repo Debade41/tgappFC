@@ -108,17 +108,19 @@ body {
   top: 50%;
   left: 50%;
   transform-origin: 0 0;
-  font-size: 9.5px;
+  font-size: 8.5px;
   font-weight: 700;
   text-align: center;
-  width: 96px;
+  width: 78px;
   margin-left: 0;
   color: rgba(59, 42, 26, 0.9);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
-  line-height: 1.15;
+  line-height: 1.1;
   letter-spacing: 0.2px;
   white-space: normal;
   word-break: break-word;
+  max-height: 40px;
+  overflow: hidden;
 }
 
 .wheel-center {
@@ -133,12 +135,14 @@ body {
 
 .pointer {
   position: absolute;
-  top: 2px;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 18px solid var(--accent);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 14px solid var(--accent);
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
   z-index: 2;
 }
