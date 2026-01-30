@@ -21,6 +21,9 @@ def validate_init_data(init_data: str, bot_token: str) -> Dict[str, str]:
     calc_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
 
     if not hmac.compare_digest(calc_hash, received_hash):
-        raise ValueError("initData hash mismatch")
+        raise ValueError(
+            "initData hash mismatch (recv=%s calc=%s)"
+            % (received_hash[:8] if received_hash else "", calc_hash[:8])
+        )
 
     return data
