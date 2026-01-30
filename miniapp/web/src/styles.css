@@ -135,12 +135,12 @@ body {
   left: 50%;
   transform-origin: 0 0;
 
-  width: 130px;          
+  width: 110px;          
   text-align: center;
 
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.05;
 
   white-space: normal;
   word-break: break-word;
