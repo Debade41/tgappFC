@@ -137,7 +137,7 @@ export default function App() {
                 <div
                   className="wheel-label"
                   key={label}
-                  style={{ transform: `rotate(${angle}deg) translateY(-110px)` }}
+                  style={{ transform: `rotate(${angle}deg) translateY(-88px) translateX(-50%)` }}
                 >
                   {label}
                 </div>
