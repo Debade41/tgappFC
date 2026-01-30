@@ -211,7 +211,7 @@ export default function App() {
 
             const angle = (index + 0.5) * segmentAngle - 90;
 
-            const radius = 95;
+            const radius = 135;
             const lines = wrapLabel(label, 14, 3);
             const isLong = lines.length >= 3 || label.length > 18;
 
