@@ -195,10 +195,9 @@ export default function App() {
           {PRIZES.map((label, index) => {
             const segmentAngle = 360 / PRIZES.length;
 
-            const angle = (index + 0.5) * segmentAngle;
+            const angle = (index + 0.5) * segmentAngle - 90;
 
-            const radius = 118; 
-
+            const radius = 118;
             const lines = wrapLabel(label, 14, 3);
             const isLong = lines.length >= 3 || label.length > 18;
 
