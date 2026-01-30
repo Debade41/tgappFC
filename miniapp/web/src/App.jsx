@@ -183,7 +183,7 @@ export default function App() {
           ref={wheelRef}
           style={{
             "--count": count,
-            background: `conic-gradient(${PRIZES.map((_, i) => {
+            background: `conic-gradient(from -90deg, ${PRIZES.map((_, i) => {
               const start = segmentAngle * i;
               const end = segmentAngle * (i + 1);
               const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
