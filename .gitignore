@@ -6,3 +6,4 @@ dist/
 .env
 replacements.txt
 *.log
+miniapp/data/

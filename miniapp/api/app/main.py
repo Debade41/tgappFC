@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from .db import get_spin, init_db, set_spin
+from .spin_log import log_spin
 from .security import validate_init_data
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
@@ -39,7 +40,7 @@ class InitPayload(BaseModel):
     initData: str
 
 
-def _get_user_id(init_data: str) -> int:
+def _get_user(init_data: str) -> tuple[int, dict]:
     if not BOT_TOKEN:
         raise HTTPException(status_code=500, detail="BOT_TOKEN is not set")
     try:
@@ -52,7 +53,7 @@ def _get_user_id(init_data: str) -> int:
         raise HTTPException(status_code=400, detail="user data not found")
     try:
         user = json.loads(user_raw)
-        return int(user["id"])
+        return int(user["id"]), user
     except Exception as exc:
         raise HTTPException(status_code=400, detail="invalid user data") from exc
 
@@ -72,7 +73,7 @@ async def prizes():
 
 @app.post("/api/me")
 async def me(payload: InitPayload):
-    user_id = _get_user_id(payload.initData)
+    user_id, _user = _get_user(payload.initData)
     record = get_spin(user_id)
     if not record:
         return {"has_spun": False, "prize": None, "prize_index": None}
@@ -83,13 +84,14 @@ async def me(payload: InitPayload):
 
 @app.post("/api/spin")
 async def spin(payload: InitPayload):
-    user_id = _get_user_id(payload.initData)
+    user_id, user = _get_user(payload.initData)
 
     record = get_spin(user_id)
     is_admin = user_id == ADMIN_USER_ID
     if record and not is_admin:
         prize = record["prize"]
         prize_index = PRIZES.index(prize) if prize in PRIZES else None
+        log_spin(user, prize, already=True)
         return {"ok": True, "already": True, "prize": prize, "prize_index": prize_index, "locked": True}
 
     prize = random.choice(PRIZES)
@@ -97,4 +99,5 @@ async def spin(payload: InitPayload):
     if not is_admin:
         set_spin(user_id, prize, datetime.now(timezone.utc).isoformat())
 
+    log_spin(user, prize, already=False)
     return {"ok": True, "already": False, "prize": prize, "prize_index": prize_index, "locked": not is_admin}
