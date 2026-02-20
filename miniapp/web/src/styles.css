@@ -115,7 +115,7 @@ body {
   inset: 0;
   border-radius: 50%;
   background: repeating-conic-gradient(
-    from -90deg,
+    from var(--start-angle, -90deg),
     rgba(255, 255, 255, 0.95) 0 1.4deg,
     rgba(255, 255, 255, 0) 1.4deg calc(360deg / var(--count))
   );
@@ -131,9 +131,7 @@ body {
 
 .wheel-label {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: 0 0;
+  transform-origin: center center;
 
   width: 104px;
   text-align: center;

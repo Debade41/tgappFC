@@ -149,7 +149,7 @@ export default function App() {
           ? result.prize_index
           : Math.max(0, prizes.indexOf(result.prize));
 
-      const desiredMod = (360 - (landingIndex + 0.5) * segmentAngle) % 360;
+      const desiredMod = (360 - landingIndex * segmentAngle) % 360;
 
       const current = ((rotationRef.current % 360) + 360) % 360;
 
@@ -182,6 +182,7 @@ export default function App() {
 
   const count = prizes.length;
   const segmentAngle = 360 / count;
+  const wheelStartAngle = -90 - segmentAngle / 2;
 
   return (
     <div className="app">
@@ -200,7 +201,8 @@ export default function App() {
           ref={wheelRef}
           style={{
             "--count": count,
-            background: `conic-gradient(from -90deg, ${prizes.map((_, i) => {
+            "--start-angle": `${wheelStartAngle}deg`,
+            background: `conic-gradient(from ${wheelStartAngle}deg, ${prizes.map((_, i) => {
               const start = segmentAngle * i;
               const end = segmentAngle * (i + 1);
               const color = SEGMENT_COLORS[i % SEGMENT_COLORS.length];
@@ -211,9 +213,10 @@ export default function App() {
           <div className="wheel-labels">
           {prizes.map((label, index) => {
             const segmentAngle = 360 / prizes.length;
-            const angle = (index + 0.5) * segmentAngle - 90;
+            const angle = index * segmentAngle - 90;
+            const angleRad = (angle * Math.PI) / 180;
 
-            const radius = prizes.length >= 10 ? 136 : 144;
+            const radiusPercent = prizes.length >= 10 ? 36 : 38;
             const lines = wrapLabel(label, prizes.length >= 10 ? 13 : 14, 3);
             const isLong = lines.length >= 3 || label.length > 18;
 
@@ -222,12 +225,11 @@ export default function App() {
                 key={`${label}-${index}`}
                 className={`wheel-label${isLong ? " long" : ""}`}
                 style={{
+                  left: `${50 + radiusPercent * Math.cos(angleRad)}%`,
+                  top: `${50 + radiusPercent * Math.sin(angleRad)}%`,
                   transform: `
-                    rotate(${angle}deg)
-                    translate(${radius}px)
-                    rotate(90deg)
                     translate(-50%, -50%)
-                    translate(18px, 0)
+                    rotate(${angle + 90}deg)
                   `,
                 }}
               >
