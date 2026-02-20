@@ -211,11 +211,10 @@ export default function App() {
           <div className="wheel-labels">
           {prizes.map((label, index) => {
             const segmentAngle = 360 / prizes.length;
-
             const angle = (index + 0.5) * segmentAngle - 90;
 
-            const radius = 135;
-            const lines = wrapLabel(label, 14, 3);
+            const radius = prizes.length >= 10 ? 122 : 135;
+            const lines = wrapLabel(label, prizes.length >= 10 ? 11 : 14, 3);
             const isLong = lines.length >= 3 || label.length > 18;
 
             return (
@@ -228,7 +227,6 @@ export default function App() {
                     translate(${radius}px)
                     rotate(90deg)
                     translate(-50%, -50%)
-                    translate(24px, 0)
                   `,
                 }}
               >

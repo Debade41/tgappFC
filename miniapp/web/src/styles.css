@@ -135,16 +135,16 @@ body {
   left: 50%;
   transform-origin: 0 0;
 
-  width: 110px;          
+  width: 96px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.08;
 
   white-space: normal;
   word-break: break-word;
@@ -152,11 +152,7 @@ body {
 }
 
 .wheel-label.long {
-  font-size: 9px;
-}
-
-.wheel-label.long {
-  font-size: 8.7px;
+  font-size: 8.3px;
   letter-spacing: 0.12px;
 }
 
