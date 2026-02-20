@@ -213,8 +213,8 @@ export default function App() {
             const segmentAngle = 360 / prizes.length;
             const angle = (index + 0.5) * segmentAngle - 90;
 
-            const radius = prizes.length >= 10 ? 122 : 135;
-            const lines = wrapLabel(label, prizes.length >= 10 ? 11 : 14, 3);
+            const radius = prizes.length >= 10 ? 136 : 144;
+            const lines = wrapLabel(label, prizes.length >= 10 ? 13 : 14, 3);
             const isLong = lines.length >= 3 || label.length > 18;
 
             return (
@@ -227,6 +227,7 @@ export default function App() {
                     translate(${radius}px)
                     rotate(90deg)
                     translate(-50%, -50%)
+                    translate(18px, 0)
                   `,
                 }}
               >
