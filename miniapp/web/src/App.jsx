@@ -115,16 +115,10 @@ export default function App() {
     apiPost("/api/me", { initData })
       .then((data) => {
         if (data.has_spun) {
-          const count = prizes.length;
-          const landingIndex =
-            typeof data.prize_index === "number" && data.prize_index >= 0
-              ? data.prize_index
-              : Math.max(0, prizes.indexOf(data.prize));
-          const nextRotation = getRotationForIndex(landingIndex, count);
-          rotationRef.current = nextRotation;
+          rotationRef.current = 0;
           if (wheelRef.current) {
             wheelRef.current.style.transition = "none";
-            wheelRef.current.style.transform = `rotate(${nextRotation}deg)`;
+            wheelRef.current.style.transform = "rotate(0deg)";
           }
           setPrize(data.prize);
           setStatus("locked");
@@ -152,16 +146,10 @@ export default function App() {
       const result = await apiPost("/api/spin", { initData });
 
       if (result.already) {
-        const count = prizes.length;
-        const landingIndex =
-          typeof result.prize_index === "number" && result.prize_index >= 0
-            ? result.prize_index
-            : Math.max(0, prizes.indexOf(result.prize));
-        const nextRotation = getRotationForIndex(landingIndex, count);
-        rotationRef.current = nextRotation;
+        rotationRef.current = 0;
         if (wheelRef.current) {
           wheelRef.current.style.transition = "none";
-          wheelRef.current.style.transform = `rotate(${nextRotation}deg)`;
+          wheelRef.current.style.transform = "rotate(0deg)";
         }
         setStatus("locked");
         setPrize(result.prize);
