@@ -74,6 +74,11 @@ function wrapLabel(text, maxLen = 14, maxLines = 3) {
   return lines;
 }
 
+function getRotationForIndex(index, count) {
+  const segmentAngle = 360 / count;
+  return (360 - (index + 0.5) * segmentAngle) % 360;
+}
+
 export default function App() {
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("Добро пожаловать в колесо фортуны");
@@ -108,6 +113,17 @@ export default function App() {
     apiPost("/api/me", { initData })
       .then((data) => {
         if (data.has_spun) {
+          const count = prizes.length;
+          const landingIndex =
+            typeof data.prize_index === "number" && data.prize_index >= 0
+              ? data.prize_index
+              : Math.max(0, prizes.indexOf(data.prize));
+          const nextRotation = getRotationForIndex(landingIndex, count);
+          rotationRef.current = nextRotation;
+          if (wheelRef.current) {
+            wheelRef.current.style.transition = "none";
+            wheelRef.current.style.transform = `rotate(${nextRotation}deg)`;
+          }
           setPrize(data.prize);
           setStatus("locked");
           setMessage("Вы уже крутили колесо");
@@ -116,7 +132,7 @@ export default function App() {
       .catch(() => {
         setMessage("Ошибка проверки. Попробуйте позже.");
       });
-  }, [initData]);
+  }, [initData, prizes]);
 
   const spin = async () => {
     if (status === "spinning" || status === "locked") return;
@@ -134,6 +150,17 @@ export default function App() {
       const result = await apiPost("/api/spin", { initData });
 
       if (result.already) {
+        const count = prizes.length;
+        const landingIndex =
+          typeof result.prize_index === "number" && result.prize_index >= 0
+            ? result.prize_index
+            : Math.max(0, prizes.indexOf(result.prize));
+        const nextRotation = getRotationForIndex(landingIndex, count);
+        rotationRef.current = nextRotation;
+        if (wheelRef.current) {
+          wheelRef.current.style.transition = "none";
+          wheelRef.current.style.transform = `rotate(${nextRotation}deg)`;
+        }
         setStatus("locked");
         setPrize(result.prize);
         setMessage("Вы уже крутили колесо");
@@ -149,7 +176,7 @@ export default function App() {
           ? result.prize_index
           : Math.max(0, prizes.indexOf(result.prize));
 
-      const desiredMod = (360 - (landingIndex + 0.5) * segmentAngle) % 360;
+      const desiredMod = getRotationForIndex(landingIndex, count);
 
       const current = ((rotationRef.current % 360) + 360) % 360;
 
@@ -216,7 +243,7 @@ export default function App() {
             const angle = (index + 0.5) * segmentAngle - 90;
             const angleRad = (angle * Math.PI) / 180;
 
-            const radiusPercent = prizes.length >= 10 ? 36 : 38;
+            const radiusPercent = prizes.length >= 10 ? 40 : 39;
             const lines = wrapLabel(label, prizes.length >= 10 ? 13 : 14, 3);
             const isLong = lines.length >= 3 || label.length > 18;
 
