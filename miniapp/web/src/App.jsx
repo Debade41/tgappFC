@@ -149,7 +149,7 @@ export default function App() {
           ? result.prize_index
           : Math.max(0, prizes.indexOf(result.prize));
 
-      const desiredMod = (360 - landingIndex * segmentAngle) % 360;
+      const desiredMod = (360 - (landingIndex + 0.5) * segmentAngle) % 360;
 
       const current = ((rotationRef.current % 360) + 360) % 360;
 
@@ -182,7 +182,7 @@ export default function App() {
 
   const count = prizes.length;
   const segmentAngle = 360 / count;
-  const wheelStartAngle = -90 - segmentAngle / 2;
+  const wheelStartAngle = -90;
 
   return (
     <div className="app">
@@ -213,7 +213,7 @@ export default function App() {
           <div className="wheel-labels">
           {prizes.map((label, index) => {
             const segmentAngle = 360 / prizes.length;
-            const angle = index * segmentAngle - 90;
+            const angle = (index + 0.5) * segmentAngle - 90;
             const angleRad = (angle * Math.PI) / 180;
 
             const radiusPercent = prizes.length >= 10 ? 36 : 38;
