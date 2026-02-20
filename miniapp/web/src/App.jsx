@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 const SPIN_DURATION_MS = 5000;
+const POINTER_OFFSET_SEGMENTS = 0.5;
 
 const DEFAULT_PRIZES = [
   "Скидка 7%",
@@ -76,7 +77,7 @@ function wrapLabel(text, maxLen = 14, maxLines = 3) {
 
 function getRotationForIndex(index, count) {
   const segmentAngle = 360 / count;
-  return (360 - index * segmentAngle) % 360;
+  return (360 - (index + POINTER_OFFSET_SEGMENTS) * segmentAngle) % 360;
 }
 
 export default function App() {
@@ -244,9 +245,9 @@ export default function App() {
             const angleRad = (angle * Math.PI) / 180;
 
             const isDense = prizes.length >= 10;
-            const radiusPercent = isDense ? 35 : 38;
-            const labelWidth = isDense ? 78 : 98;
-            const lines = wrapLabel(label, isDense ? 10 : 14, 3);
+            const radiusPercent = isDense ? 42 : 39;
+            const labelWidth = isDense ? 72 : 98;
+            const lines = wrapLabel(label, isDense ? 9 : 14, 3);
             const isLong = lines.length >= 3 || label.length > 18;
 
             return (

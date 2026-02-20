@@ -140,7 +140,7 @@ body {
   align-items: center;
   justify-content: center;
 
-  font-size: 8.2px;
+  font-size: 7.6px;
   font-weight: 700;
   line-height: 1.04;
 
@@ -150,7 +150,7 @@ body {
 }
 
 .wheel-label.long {
-  font-size: 7.6px;
+  font-size: 7.1px;
   letter-spacing: 0.12px;
 }
 
