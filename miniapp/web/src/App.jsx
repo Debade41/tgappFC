@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 const API_URL = import.meta.env.VITE_API_URL || "";
 const SPIN_DURATION_MS = 5000;
 const POINTER_OFFSET_SEGMENTS = 0.5;
+const LABEL_OFFSET_SEGMENTS = 0.5;
 
 const DEFAULT_PRIZES = [
   "Скидка 7%",
@@ -241,7 +242,7 @@ export default function App() {
           <div className="wheel-labels">
           {prizes.map((label, index) => {
             const segmentAngle = 360 / prizes.length;
-            const angle = wheelStartAngle + (index + 0.5) * segmentAngle;
+            const angle = wheelStartAngle + (index + 0.5 + LABEL_OFFSET_SEGMENTS) * segmentAngle;
             const angleRad = (angle * Math.PI) / 180;
 
             const isDense = prizes.length >= 10;
