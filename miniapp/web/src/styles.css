@@ -133,14 +133,14 @@ body {
   position: absolute;
   transform-origin: center center;
 
-  width: 104px;
+  width: 98px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  font-size: 8.8px;
+  font-size: 8.2px;
   font-weight: 700;
   line-height: 1.04;
 
@@ -150,7 +150,7 @@ body {
 }
 
 .wheel-label.long {
-  font-size: 8px;
+  font-size: 7.6px;
   letter-spacing: 0.12px;
 }
 

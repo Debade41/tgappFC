@@ -76,7 +76,7 @@ function wrapLabel(text, maxLen = 14, maxLines = 3) {
 
 function getRotationForIndex(index, count) {
   const segmentAngle = 360 / count;
-  return (360 - (index + 0.5) * segmentAngle) % 360;
+  return (360 - index * segmentAngle) % 360;
 }
 
 export default function App() {
@@ -209,7 +209,7 @@ export default function App() {
 
   const count = prizes.length;
   const segmentAngle = 360 / count;
-  const wheelStartAngle = -90;
+  const wheelStartAngle = -90 - segmentAngle / 2;
 
   return (
     <div className="app">
@@ -240,11 +240,13 @@ export default function App() {
           <div className="wheel-labels">
           {prizes.map((label, index) => {
             const segmentAngle = 360 / prizes.length;
-            const angle = (index + 0.5) * segmentAngle - 90;
+            const angle = wheelStartAngle + (index + 0.5) * segmentAngle;
             const angleRad = (angle * Math.PI) / 180;
 
-            const radiusPercent = prizes.length >= 10 ? 40 : 39;
-            const lines = wrapLabel(label, prizes.length >= 10 ? 13 : 14, 3);
+            const isDense = prizes.length >= 10;
+            const radiusPercent = isDense ? 35 : 38;
+            const labelWidth = isDense ? 78 : 98;
+            const lines = wrapLabel(label, isDense ? 10 : 14, 3);
             const isLong = lines.length >= 3 || label.length > 18;
 
             return (
@@ -254,6 +256,7 @@ export default function App() {
                 style={{
                   left: `${50 + radiusPercent * Math.cos(angleRad)}%`,
                   top: `${50 + radiusPercent * Math.sin(angleRad)}%`,
+                  width: `${labelWidth}px`,
                   transform: `
                     translate(-50%, -50%)
                     rotate(${angle + 90}deg)
