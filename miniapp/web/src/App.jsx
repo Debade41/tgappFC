@@ -246,9 +246,9 @@ export default function App() {
             const angleRad = (angle * Math.PI) / 180;
 
             const isDense = prizes.length >= 10;
-            const radiusPercent = isDense ? 42 : 39;
-            const labelWidth = isDense ? 72 : 98;
-            const lines = wrapLabel(label, isDense ? 9 : 14, 3);
+            const radiusPercent = isDense ? 37 : 38;
+            const labelWidth = isDense ? 78 : 98;
+            const lines = wrapLabel(label, isDense ? 11 : 14, 3);
             const isLong = lines.length >= 3 || label.length > 18;
 
             return (
@@ -259,10 +259,7 @@ export default function App() {
                   left: `${50 + radiusPercent * Math.cos(angleRad)}%`,
                   top: `${50 + radiusPercent * Math.sin(angleRad)}%`,
                   width: `${labelWidth}px`,
-                  transform: `
-                    translate(-50%, -50%)
-                    rotate(${angle + 90}deg)
-                  `,
+                  transform: "translate(-50%, -50%)",
                 }}
               >
                 {lines.map((t, i) => (
