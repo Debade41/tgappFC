@@ -7,13 +7,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from .db import get_spin, init_db, set_spin
+from .db import add_spin_attempt, count_spins_for_month, get_last_spin, init_db
 from .spin_log import log_spin
 from .security import validate_init_data
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID", "0"))
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*")
+MONTHLY_SPIN_LIMIT = 2
 
 PRIZES = [
     "Скидка 7%",
@@ -61,6 +62,10 @@ def _get_user(init_data: str) -> tuple[int, dict]:
         raise HTTPException(status_code=400, detail="invalid user data") from exc
 
 
+def _month_id_now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m")
+
+
 @app.on_event("startup")
 async def startup() -> None:
     init_db()
@@ -77,30 +82,67 @@ async def prizes():
 @app.post("/api/me")
 async def me(payload: InitPayload):
     user_id, _user = _get_user(payload.initData)
-    record = get_spin(user_id)
+    month_id = _month_id_now()
+    spins_used_month = count_spins_for_month(user_id, month_id)
+    spins_left_month = max(0, MONTHLY_SPIN_LIMIT - spins_used_month)
+    record = get_last_spin(user_id)
     if not record:
-        return {"has_spun": False, "prize": None, "prize_index": None}
+        return {
+            "has_spun": False,
+            "prize": None,
+            "prize_index": None,
+            "spins_used_month": spins_used_month,
+            "spins_left_month": spins_left_month,
+            "monthly_limit": MONTHLY_SPIN_LIMIT,
+        }
     prize = record["prize"]
     prize_index = PRIZES.index(prize) if prize in PRIZES else None
-    return {"has_spun": True, "prize": prize, "prize_index": prize_index}
+    return {
+        "has_spun": True,
+        "prize": prize,
+        "prize_index": prize_index,
+        "spins_used_month": spins_used_month,
+        "spins_left_month": spins_left_month,
+        "monthly_limit": MONTHLY_SPIN_LIMIT,
+    }
 
 
 @app.post("/api/spin")
 async def spin(payload: InitPayload):
     user_id, user = _get_user(payload.initData)
 
-    record = get_spin(user_id)
     is_admin = user_id == ADMIN_USER_ID
-    if record and not is_admin:
-        prize = record["prize"]
-        prize_index = PRIZES.index(prize) if prize in PRIZES else None
-        log_spin(user, prize, already=True)
-        return {"ok": True, "already": True, "prize": prize, "prize_index": prize_index, "locked": True}
+    month_id = _month_id_now()
+    spins_used_month = count_spins_for_month(user_id, month_id)
+    spins_left_month = max(0, MONTHLY_SPIN_LIMIT - spins_used_month)
+    if not is_admin and spins_left_month <= 0:
+        return {
+            "ok": False,
+            "already": True,
+            "error": "monthly_limit_reached",
+            "message": "Лимит 2 круток в месяц достигнут",
+            "spins_used_month": spins_used_month,
+            "spins_left_month": 0,
+            "monthly_limit": MONTHLY_SPIN_LIMIT,
+            "locked": True,
+        }
 
     prize = random.choice(PRIZES)
     prize_index = PRIZES.index(prize)
     if not is_admin:
-        set_spin(user_id, prize, datetime.now(timezone.utc).isoformat())
+        created_at = datetime.now(timezone.utc).isoformat()
+        add_spin_attempt(user_id, prize, created_at, month_id)
+        spins_used_month += 1
+        spins_left_month = max(0, MONTHLY_SPIN_LIMIT - spins_used_month)
 
     log_spin(user, prize, already=False)
-    return {"ok": True, "already": False, "prize": prize, "prize_index": prize_index, "locked": not is_admin}
+    return {
+        "ok": True,
+        "already": False,
+        "prize": prize,
+        "prize_index": prize_index,
+        "spins_used_month": spins_used_month,
+        "spins_left_month": spins_left_month if not is_admin else MONTHLY_SPIN_LIMIT,
+        "monthly_limit": MONTHLY_SPIN_LIMIT,
+        "locked": (not is_admin) and spins_left_month <= 0,
+    }

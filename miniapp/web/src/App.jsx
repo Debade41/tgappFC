@@ -86,6 +86,8 @@ export default function App() {
   const [message, setMessage] = useState("Добро пожаловать в колесо фортуны");
   const [prize, setPrize] = useState(null);
   const [prizes, setPrizes] = useState(DEFAULT_PRIZES);
+  const [spinsLeft, setSpinsLeft] = useState(2);
+  const [monthlyLimit, setMonthlyLimit] = useState(2);
 
   const wheelRef = useRef(null);
   const initData = useMemo(() => getInitData(), []);
@@ -114,6 +116,11 @@ export default function App() {
 
     apiPost("/api/me", { initData })
       .then((data) => {
+        const left = typeof data.spins_left_month === "number" ? data.spins_left_month : 0;
+        const limit = typeof data.monthly_limit === "number" ? data.monthly_limit : 2;
+        setSpinsLeft(left);
+        setMonthlyLimit(limit);
+
         if (data.has_spun) {
           rotationRef.current = 0;
           if (wheelRef.current) {
@@ -121,8 +128,11 @@ export default function App() {
             wheelRef.current.style.transform = "rotate(0deg)";
           }
           setPrize(data.prize);
-          setStatus("locked");
-          setMessage("Вы уже крутили колесо");
+          setStatus(left <= 0 ? "locked" : "idle");
+          setMessage(left <= 0 ? "Лимит на этот месяц исчерпан" : `Можно крутить ещё: ${left}`);
+        } else {
+          setStatus(left <= 0 ? "locked" : "idle");
+          setMessage(left <= 0 ? "Лимит на этот месяц исчерпан" : `Можно крутить ещё: ${left}`);
         }
       })
       .catch(() => {
@@ -137,6 +147,11 @@ export default function App() {
       setMessage("Откройте приложение через Telegram");
       return;
     }
+    if (spinsLeft <= 0) {
+      setStatus("locked");
+      setMessage("Лимит 2 круток в месяц достигнут");
+      return;
+    }
 
     setStatus("spinning");
     setMessage("Колесо вращается...");
@@ -144,6 +159,13 @@ export default function App() {
 
     try {
       const result = await apiPost("/api/spin", { initData });
+
+      if (!result.ok && result.error === "monthly_limit_reached") {
+        setSpinsLeft(0);
+        setStatus("locked");
+        setMessage(result.message || "Лимит 2 круток в месяц достигнут");
+        return;
+      }
 
       if (result.already) {
         rotationRef.current = 0;
@@ -153,7 +175,8 @@ export default function App() {
         }
         setStatus("locked");
         setPrize(result.prize);
-        setMessage("Вы уже крутили колесо");
+        setSpinsLeft(typeof result.spins_left_month === "number" ? result.spins_left_month : 0);
+        setMessage(result.message || "Лимит 2 круток в месяц достигнут");
         return;
       }
 
@@ -183,9 +206,12 @@ export default function App() {
       }
 
       setTimeout(() => {
-        setStatus(result.locked ? "locked" : "done");
+        const left = typeof result.spins_left_month === "number" ? result.spins_left_month : Math.max(spinsLeft - 1, 0);
+        setSpinsLeft(left);
+        setMonthlyLimit(typeof result.monthly_limit === "number" ? result.monthly_limit : monthlyLimit);
+        setStatus(left <= 0 ? "locked" : "done");
         setPrize(result.prize);
-        setMessage("Спасибо за участие");
+        setMessage(left <= 0 ? "Спасибо за участие. Лимит месяца исчерпан" : `Спасибо за участие. Осталось: ${left}`);
 
         try {
           window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("success");
@@ -265,10 +291,11 @@ export default function App() {
       <div className="status">
         <div className="message">{message}</div>
         {prize && <div className="prize">{prize}</div>}
+        <div className="message">Осталось круток в месяце: {spinsLeft} из {monthlyLimit}</div>
       </div>
 
-      <button className="spin-btn" onClick={spin} disabled={status === "spinning" || status === "locked"}>
-        {status === "locked" ? "Уже участвовали" : status === "spinning" ? "Крутим..." : "Крутить колесо фортуны"}
+      <button className="spin-btn" onClick={spin} disabled={status === "spinning" || spinsLeft <= 0}>
+        {spinsLeft <= 0 ? "Уже участвовали" : status === "spinning" ? "Крутим..." : "Крутить колесо фортуны"}
       </button>
     </div>
   );
